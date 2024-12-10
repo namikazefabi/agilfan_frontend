@@ -1,101 +1,163 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState } from "react";
+
+export default function Pagamentos() {
+  const [pagamentos, setPagamentos] = useState([
+    {
+      id_pagamento: "PGT001",
+      matricula: "2022001",
+      tipo: 1,
+      mes_ref: 12,
+      ano_ref: 2024,
+      dt_venc: "2024-12-20",
+      valor: 500.0,
+      valor_a_pagar: 450.0,
+      valor_pago: 0.0,
+      situacao: "pendente", // Situations: "pendente", "pago", "cancelado"
+      id_turma: "TURMA01",
+    },
+    {
+      id_pagamento: "PGT002",
+      matricula: "2022002",
+      tipo: 1,
+      mes_ref: 11,
+      ano_ref: 2024,
+      dt_venc: "2024-11-20",
+      valor: 500.0,
+      valor_a_pagar: 450.0,
+      valor_pago: 450.0,
+      situacao: "pago",
+      id_turma: "TURMA02",
+    },
+  ]);
+
+  // Formatar valores para Real (R$)
+  const formatCurrency = (value: number) =>
+    value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  // Formatar datas para o formato brasileiro
+  const formatDate = (date: string) =>
+    new Date(date).toLocaleDateString("pt-BR");
+
+  // Atualizar o valor a pagar
+  const handleValorAPagarChange = (id: string, newValue: number) => {
+    setPagamentos((prev) =>
+      prev.map((p) =>
+        p.id_pagamento === id ? { ...p, valor_a_pagar: newValue } : p
+      )
+    );
+  };
+
+  // Alterar situação para "pago" apenas se o valor for suficiente
+  const handleCheck = (id: string) => {
+    setPagamentos((prev) =>
+      prev.map((p) => {
+        if (p.id_pagamento === id && p.valor_a_pagar >= p.valor_pago) {
+          return { ...p, situacao: "pago" };
+        }
+        return p;
+      })
+    );
+  };
+
+  // Alterar situação para "cancelado" e gerar novo boleto
+  const handleCancel = (id: string) => {
+    setPagamentos((prev) =>
+      prev.map((p) => {
+        if (p.id_pagamento === id) {
+          return {
+            ...p,
+            situacao: "cancelado",
+            id_pagamento: `NEW-${Math.random().toString(36).substr(2, 9)}`, // Gerar novo ID
+            valor_pago: 0, // Resetar valor pago
+            valor_a_pagar: p.valor, // Novo boleto com valor cheio
+          };
+        }
+        return p;
+      })
+    );
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="min-h-screen p-8 bg-gradient-to-b from-blue-600 to-blue-900 text-white">
+      <header className="mb-8">
+        <h1 className="text-5xl font-bold text-center text-orange-500">AgilFan</h1>
+        <p className="text-center mt-2 text-lg">
+          Seu sistema para gerenciar pagamentos com eficiência
+        </p>
+      </header>
+      <div className="flex flex-col items-center">
+        <table className="w-full max-w-5xl bg-white text-black rounded-lg shadow-lg overflow-hidden">
+          <thead className="bg-blue-500 text-white">
+            <tr>
+              <th className="p-4 text-left">📑 ID Pagamento</th>
+              <th className="p-4 text-left">👤 Matrícula</th>
+              <th className="p-4 text-left">📅 Mês/Ano</th>
+              <th className="p-4 text-left">⏰ Vencimento</th>
+              <th className="p-4 text-right">💲 Valor (R$)</th>
+              <th className="p-4 text-right">💲 Valor a Pagar (R$)</th>
+              <th className="p-4 text-right">💵 Valor Pago (R$)</th>
+              <th className="p-4 text-center">✔️ Situação</th>
+              <th className="p-4 text-center">✅ Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pagamentos.map((p) => (
+              <tr key={p.id_pagamento} className="border-t hover:bg-gray-100">
+                <td className="p-4">{p.id_pagamento}</td>
+                <td className="p-4">{p.matricula}</td>
+                <td className="p-4">{`${p.mes_ref}/${p.ano_ref}`}</td>
+                <td className="p-4">{formatDate(p.dt_venc)}</td>
+                <td className="p-4 text-right">{formatCurrency(p.valor)}</td>
+                <td className="p-4 text-right">
+                  <input
+                    type="number"
+                    value={p.valor_a_pagar}
+                    onChange={(e) =>
+                      handleValorAPagarChange(
+                        p.id_pagamento,
+                        parseFloat(e.target.value)
+                      )
+                    }
+                    className="w-20 text-right border rounded p-1"
+                  />
+                </td>
+                <td className="p-4 text-right">{formatCurrency(p.valor_pago)}</td>
+                <td
+                  className={`p-4 text-center font-semibold ${
+                    p.situacao === "pago"
+                      ? "text-green-500"
+                      : p.situacao === "pendente"
+                      ? "text-orange-500"
+                      : "text-red-500"
+                  }`}
+                >
+                  {p.situacao.charAt(0).toUpperCase() + p.situacao.slice(1)}
+                </td>
+                <td className="p-4 text-center flex justify-center gap-2">
+                  {p.situacao !== "cancelado" && (
+                    <button
+                      onClick={() => handleCheck(p.id_pagamento)}
+                      className="px-2 py-1 bg-green-500 text-white rounded shadow hover:bg-green-600"
+                    >
+                      Check
+                    </button>
+                  )}
+                  {p.situacao !== "cancelado" && (
+                    <button
+                      onClick={() => handleCancel(p.id_pagamento)}
+                      className="px-2 py-1 bg-red-500 text-white rounded shadow hover:bg-red-600"
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
