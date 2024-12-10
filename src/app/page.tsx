@@ -40,21 +40,17 @@ export default function Pagamentos() {
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString("pt-BR");
 
-  // Atualizar o valor a pagar
-  const handleValorAPagarChange = (id: string, newValue: number) => {
-    setPagamentos((prev) =>
-      prev.map((p) =>
-        p.id_pagamento === id ? { ...p, valor_a_pagar: newValue } : p
-      )
-    );
-  };
-
-  // Alterar situação para "pago" apenas se o valor for suficiente
-  const handleCheck = (id: string) => {
+  // Atualizar o valor pago
+  const handleValorPagoChange = (id: string, newValue: number) => {
     setPagamentos((prev) =>
       prev.map((p) => {
-        if (p.id_pagamento === id && p.valor_a_pagar >= p.valor_pago) {
-          return { ...p, situacao: "pago" };
+        if (p.id_pagamento === id) {
+          const isPago = newValue === p.valor_a_pagar; // Verifica se o valor pago é igual ao valor a pagar
+          return {
+            ...p,
+            valor_pago: newValue,
+            situacao: isPago ? "pago" : "pendente", // Atualiza a situação
+          };
         }
         return p;
       })
@@ -110,12 +106,13 @@ export default function Pagamentos() {
                 <td className="p-4">{`${p.mes_ref}/${p.ano_ref}`}</td>
                 <td className="p-4">{formatDate(p.dt_venc)}</td>
                 <td className="p-4 text-right">{formatCurrency(p.valor)}</td>
+                <td className="p-4 text-right">{formatCurrency(p.valor_a_pagar)}</td>
                 <td className="p-4 text-right">
                   <input
                     type="number"
-                    value={p.valor_a_pagar}
+                    value={p.valor_pago}
                     onChange={(e) =>
-                      handleValorAPagarChange(
+                      handleValorPagoChange(
                         p.id_pagamento,
                         parseFloat(e.target.value)
                       )
@@ -123,7 +120,6 @@ export default function Pagamentos() {
                     className="w-20 text-right border rounded p-1"
                   />
                 </td>
-                <td className="p-4 text-right">{formatCurrency(p.valor_pago)}</td>
                 <td
                   className={`p-4 text-center font-semibold ${
                     p.situacao === "pago"
@@ -136,14 +132,6 @@ export default function Pagamentos() {
                   {p.situacao.charAt(0).toUpperCase() + p.situacao.slice(1)}
                 </td>
                 <td className="p-4 text-center flex justify-center gap-2">
-                  {p.situacao !== "cancelado" && (
-                    <button
-                      onClick={() => handleCheck(p.id_pagamento)}
-                      className="px-2 py-1 bg-green-500 text-white rounded shadow hover:bg-green-600"
-                    >
-                      Check
-                    </button>
-                  )}
                   {p.situacao !== "cancelado" && (
                     <button
                       onClick={() => handleCancel(p.id_pagamento)}
