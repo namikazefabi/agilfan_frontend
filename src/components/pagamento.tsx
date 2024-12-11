@@ -3,41 +3,13 @@
 import React, { useState, useEffect } from "react";
 
 export default function Pagamentos() {
-  const [pagamentos, setPagamentos] = useState([
-    {
-      id_pagamento: "PGT001",
-      matricula: "2022001",
-      tipo: 1,
-      mes_ref: 12,
-      ano_ref: 2024,
-      dt_venc: "2024-12-20",
-      valor_a_pagar: 450.0,
-      valor_pago: 0.0,
-      situacao: "pendente",
-      id_turma: "TURMA01",
-      valor: 500.0 // adicionando a propriedade 'valor'
-    },
-    {
-      id_pagamento: "PGT002",
-      matricula: "2022002",
-      tipo: 1,
-      mes_ref: 11,
-      ano_ref: 2024,
-      dt_venc: "2024-11-20",
-      valor_a_pagar: 450.0,
-      valor_pago: 450.0,
-      situacao: "pago",
-      id_turma: "TURMA02",
-      valor: 500.0 // adicionando a propriedade 'valor'
-    },
-  ]);
-
+  const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
 
   useEffect(() => {
     const createInitialData = async () => {
       const turmaData = {
         id_turma: "TURMA01",
-        curso: "Eng software",
+        curso: "Curso Exemplo",
         turno: "Manhã",
         ano_ref: 2024,
         semestre_ref: 1,
@@ -243,12 +215,4 @@ export default function Pagamentos() {
                       Cancelar
                     </button>
                   )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+                </
