@@ -14,7 +14,7 @@ export default function Pagamentos() {
       valor: 500.0,
       valor_a_pagar: 450.0,
       valor_pago: 0.0,
-      situacao: "pendente", // Situations: "pendente", "pago", "cancelado"
+      situacao: "pendente", // "pendente", "pago", "cancelado"
       id_turma: "TURMA01",
     },
     {
@@ -43,21 +43,29 @@ export default function Pagamentos() {
   // Atualizar o valor pago
   const handleValorPagoChange = (id: string, newValue: number) => {
     setPagamentos((prev) =>
+      prev.map((p) =>
+        p.id_pagamento === id ? { ...p, valor_pago: newValue } : p
+      )
+    );
+  };
+
+  // Alterar situação para "pago" apenas se o valor for suficiente
+  const handleCheck = (id: string) => {
+    setPagamentos((prev) =>
       prev.map((p) => {
-        if (p.id_pagamento === id) {
-          const isPago = newValue === p.valor_a_pagar; // Verifica se o valor pago é igual ao valor a pagar
-          return {
-            ...p,
-            valor_pago: newValue,
-            situacao: isPago ? "pago" : "pendente", // Atualiza a situação
-          };
+        if (
+          p.id_pagamento === id &&
+          p.valor_pago === p.valor_a_pagar &&
+          p.situacao === "pendente"
+        ) {
+          return { ...p, situacao: "pago" };
         }
         return p;
       })
     );
   };
 
-  // Alterar situação para "cancelado" e gerar novo boleto
+  // Alterar situação para "cancelado"
   const handleCancel = (id: string) => {
     setPagamentos((prev) =>
       prev.map((p) => {
@@ -65,9 +73,7 @@ export default function Pagamentos() {
           return {
             ...p,
             situacao: "cancelado",
-            id_pagamento: `NEW-${Math.random().toString(36).substr(2, 9)}`, // Gerar novo ID
             valor_pago: 0, // Resetar valor pago
-            valor_a_pagar: p.valor, // Novo boleto com valor cheio
           };
         }
         return p;
@@ -118,6 +124,7 @@ export default function Pagamentos() {
                       )
                     }
                     className="w-20 text-right border rounded p-1"
+                    disabled={p.situacao !== "pendente"} // Desabilita se não estiver pendente
                   />
                 </td>
                 <td
@@ -132,6 +139,14 @@ export default function Pagamentos() {
                   {p.situacao.charAt(0).toUpperCase() + p.situacao.slice(1)}
                 </td>
                 <td className="p-4 text-center flex justify-center gap-2">
+                  {p.situacao === "pendente" && (
+                    <button
+                      onClick={() => handleCheck(p.id_pagamento)}
+                      className="px-2 py-1 bg-green-500 text-white rounded shadow hover:bg-green-600"
+                    >
+                      Pagar
+                    </button>
+                  )}
                   {p.situacao !== "cancelado" && (
                     <button
                       onClick={() => handleCancel(p.id_pagamento)}
