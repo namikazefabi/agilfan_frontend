@@ -1,12 +1,30 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { api } from "@/services/api";
 
 export default function Pagamentos() {
+async function getMatricula() {
+  const response = await api.get("/turma")
+  console.log(response.data)
+}
+
+async function createMatricula() {
+  const response = await api.post("/turma/", {
+        curso: "Eng software",
+        turno: "Manhã",
+        ano_ref: 2024,
+        semestre_ref: 1,
+        valor_face: 1000.0,
+  })
+  console.log(response.data)
+}
+
+
   const [pagamentos, setPagamentos] = useState([
     {
-      id_pagamento: "PGT001",
-      matricula: "2022001",
+      id_pagamento: "PGT001", //não passar
+      matricula: "2022001", 
       tipo: 1,
       mes_ref: 12,
       ano_ref: 2024,
@@ -34,6 +52,8 @@ export default function Pagamentos() {
 
 
   useEffect(() => {
+    getMatricula();
+   
     const createInitialData = async () => {
       const turmaData = {
         id_turma: "TURMA01",
