@@ -4,6 +4,12 @@ import React, { useState, useEffect } from "react";
 import { api } from "@/services/api";
 
 export default function Pagamentos() {
+  useEffect(() => {
+    getMatricula();
+    getUsuario();
+    getPagamentos();
+  }, []);
+
   const [pagamentos, setPagamentos] = useState<
     Array<{
       id_pagamento: string;
@@ -34,10 +40,12 @@ export default function Pagamentos() {
     },
   ]);
 
+  const [novoPagamento, setNovoPagamento] = useState({});
   const [newMesRef, setNewMesRef] = useState<string>("");
   const [newAnoRef, setNewAnoRef] = useState<string>("");
   const [showAddPayment, setShowAddPayment] = useState<boolean>(false);
-
+  const [usuario, setUsuario] = useState<{ user: string; } | null>(null);
+  const [matricula, setMatricula] = useState<{curso: string, turno: string; } | null>(null);
   const formatCurrency = (value: number) =>
     value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -82,7 +90,7 @@ export default function Pagamentos() {
     );
   };
 
-  const handleAddPayment = () => {
+  const handleAddPayment = async () => {
     const mes = parseInt(newMesRef, 10);
     const ano = parseInt(newAnoRef, 10);
 
@@ -94,13 +102,12 @@ export default function Pagamentos() {
       newMesRef.length !== 2 ||
       newAnoRef.length !== 4
     ) {
-      alert("Por favor, insira valores válidos para o mês (01-12) e ano (4 dígitos).")
+      alert("Por favor, insira valores válidos para o mês (01-12) e ano (4 dígitos).");
       return;
     }
 
     const novoPagamento = {
-      id_pagamento: `PGT00${pagamentos.length + 1}`,
-      matricula: "2022001",
+      matricula: "1002",
       tipo: 1,
       mes_ref: mes,
       ano_ref: ano,
@@ -108,16 +115,61 @@ export default function Pagamentos() {
       valor_a_pagar: 500.0,
       valor_pago: 0.0,
       situacao: "pendente",
-      id_turma: "TURMA01",
+      id_turma: "105",
       valor: 500.0,
     };
 
-    setPagamentos([...pagamentos, novoPagamento]);
+    try {
+      await api.post("/pagamentos/", {
+        matricula: novoPagamento.matricula,
+        tipo: novoPagamento.tipo,
+        mes_ref: novoPagamento.mes_ref,
+        ano_ref: novoPagamento.ano_ref,
+        dt_venc: novoPagamento.dt_venc,
+        valor_a_pagar: novoPagamento.valor_a_pagar,
+        valor_pago: novoPagamento.valor_pago,
+        situacao: novoPagamento.situacao,
+        id_turma: novoPagamento.id_turma,
+        valor: novoPagamento.valor,
+      });
+
+      setPagamentos([...pagamentos, { ...novoPagamento, id_pagamento: `PGT00${pagamentos.length + 1}` }]);
+      alert("Pagamento adicionado com sucesso ao banco de dados!");
+    } catch (error) {
+      console.error("Erro ao criar pagamento: ", error);
+      alert("Erro ao salvar pagamento. Tente novamente.");
+    }
+
     setShowAddPayment(false);
   };
 
+  async function getMatricula() {
+    const response = await api.get("/turma/");
+    const matriculaData = response.data[1];
+    setMatricula( {curso: matriculaData.curso, turno: matriculaData.turno })
+  }
+
+  async function getUsuario() {
+    const response = await api.get("/users/");
+    const userData = response.data[0];
+    setUsuario({ user: userData.nome });
+  }
+
+  async function getPagamentos() {
+    const response = await api.get("/pagamentos/");
+    console.log(response.data);
+  }
+
   return (
     <div className="min-h-screen p-8 bg-gradient-to-b from-blue-600 to-blue-900 text-white">
+      {usuario && matricula &&  (
+        <div className="bg-gray-800 p-4 rounded-md mb-4 text-white flex justify-between items-center">
+          <span className="font-bold text-lg">Usuário: {usuario.user}</span>
+          <span className="font-bold text-lg">Curso: {matricula.curso}</span>
+          <span className="font-bold text-lg">Turno: {matricula.turno}</span>
+        </div>
+      )}
+
       <header className="mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-5xl font-bold text-center text-orange-500">AgilFan</h1>
